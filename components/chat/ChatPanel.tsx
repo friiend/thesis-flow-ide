@@ -104,6 +104,20 @@ export default function ChatPanel() {
 
         const data = await response.json();
         await addMessage('assistant', data.content);
+
+        // 记录 token 用量
+        if (data.usage?.total_tokens) {
+          try {
+            const month = new Date().toISOString().slice(0, 7);
+            const raw = localStorage.getItem('thesis_token_usage');
+            const usage = raw ? JSON.parse(raw) : {};
+            if (!usage[month]) usage[month] = { tokens: 0, calls: 0 };
+            usage[month].tokens += data.usage.total_tokens;
+            usage[month].calls += 1;
+            localStorage.setItem('thesis_token_usage', JSON.stringify(usage));
+            window.dispatchEvent(new Event('token-used'));
+          } catch {}
+        }
       } catch (error) {
         console.error('发送失败:', error);
         await addMessage(

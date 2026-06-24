@@ -125,7 +125,15 @@ export async function POST(request: NextRequest) {
     const aiContent =
       data?.choices?.[0]?.message?.content ?? '(模型返回为空，请重试)';
 
-    return NextResponse.json({ content: aiContent, model: mc.model });
+    // --- Extract token usage ---
+    const usage = data?.usage ?? null;
+    if (usage) {
+      console.log(
+        `[ThesisFlow] 💰 tokens: ${usage.prompt_tokens} in + ${usage.completion_tokens} out = ${usage.total_tokens} total`,
+      );
+    }
+
+    return NextResponse.json({ content: aiContent, model: mc.model, usage });
   } catch (err) {
     console.error('[ThesisFlow] API route error:', err);
     return NextResponse.json(

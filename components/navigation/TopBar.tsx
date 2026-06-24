@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { GraduationCap, Building, AlertTriangle, Brain, Zap, ChevronDown, BookOpen, Sparkles, Flame } from 'lucide-react';
+import { GraduationCap, Building, AlertTriangle, Brain, Zap, ChevronDown, BookOpen, Sparkles, Flame, Coins } from 'lucide-react';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useChatStore, MODEL_OPTIONS } from '@/store/useChatStore';
 
@@ -24,6 +24,24 @@ export default function TopBar() {
 
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // 月度 token 统计
+  const [monthlyTokens, setMonthlyTokens] = useState(0);
+
+  useEffect(() => {
+    const read = () => {
+      try {
+        const raw = localStorage.getItem('thesis_token_usage');
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        const month = new Date().toISOString().slice(0, 7);
+        setMonthlyTokens(data[month]?.tokens ?? 0);
+      } catch {}
+    };
+    read();
+    window.addEventListener('token-used', read);
+    return () => window.removeEventListener('token-used', read);
+  }, []);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -87,6 +105,12 @@ export default function TopBar() {
 
         {/* 右侧：模型路由选择器 */}
         <div className="flex items-center gap-3 text-sm">
+          {monthlyTokens > 0 && (
+            <span className="hidden sm:flex items-center gap-1 text-[10px] text-stone-400 font-mono bg-white/50 rounded-lg px-2 py-1 border border-white/50" title={`本月已消耗 ${monthlyTokens.toLocaleString()} tokens`}>
+              <Coins className="h-3 w-3" />
+              {(monthlyTokens / 1000).toFixed(1)}K
+            </span>
+          )}
           <span className="hidden sm:inline text-xs text-stone-400 font-medium">模型路由</span>
           <div className="relative" ref={dropdownRef}>
             <button
