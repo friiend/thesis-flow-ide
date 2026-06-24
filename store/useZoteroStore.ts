@@ -25,6 +25,10 @@ interface ZoteroState {
   // RAG 背景文本（每次选文件夹时更新，默默带进每次对话）
   ragContext: string;
 
+  // 本地全文模式
+  localMode: boolean;
+  localPapersLoading: boolean;
+
   // 搜索（@zotero 实时联想）
   searchResults: ZoteroItem[];
   searching: boolean;
@@ -36,6 +40,7 @@ interface ZoteroState {
   // 动作
   loadCollections: () => Promise<void>;
   selectCollection: (key: string, name: string) => Promise<void>;
+  loadLocalFulltext: (collectionKey: string) => Promise<void>;
   search: (q: string) => Promise<void>;
   clearSearch: () => void;
 }
@@ -58,6 +63,9 @@ export const useZoteroStore = create<ZoteroState>((set, get) => ({
   papersLoading: false,
 
   ragContext: '',
+
+  localMode: false,
+  localPapersLoading: false,
 
   searchResults: [],
   searching: false,
@@ -136,6 +144,32 @@ export const useZoteroStore = create<ZoteroState>((set, get) => ({
       const ragContext = buildRAGContext(mockPapers);
       set({ papers: mockPapers, papersLoading: false, ragContext });
       console.log(`[Zotero] ⚠️ 使用模拟数据 (${mockPapers.length} 篇)`);
+    }
+  },
+
+  loadLocalFulltext: async (collectionKey: string) => {
+    set({ localPapersLoading: true, localMode: true });
+    try {
+      const resp = await fetch('/api/zotero-local', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'papers', collectionKey }),
+      });
+      const data = await resp.json();
+      if (data.papers && data.ragContext) {
+        set({
+          papers: data.papers,
+          ragContext: data.ragContext,
+          localPapersLoading: false,
+          activeCollectionName: collectionKey,
+        });
+        console.log(`[Zotero] 📚 本地全文加载完成：${data.papers.length} 篇论文，RAG ${data.ragContext.length} 字符`);
+      } else {
+        set({ localPapersLoading: false });
+      }
+    } catch (err) {
+      console.warn('[Zotero] 本地读取失败:', err);
+      set({ localPapersLoading: false });
     }
   },
 

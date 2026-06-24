@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Link2, Settings, Folder, CheckCircle2 } from 'lucide-react';
+import { Link2, Settings, Folder, CheckCircle2, HardDrive } from 'lucide-react';
 import { useZoteroStore } from '@/store/useZoteroStore';
 
 export default function ZoteroPanel() {
@@ -13,11 +13,14 @@ export default function ZoteroPanel() {
   const papers = useZoteroStore((s) => s.papers);
   const papersLoading = useZoteroStore((s) => s.papersLoading);
   const ragContext = useZoteroStore((s) => s.ragContext);
+  const localMode = useZoteroStore((s) => s.localMode);
+  const localPapersLoading = useZoteroStore((s) => s.localPapersLoading);
 
   const checkConfig = useZoteroStore((s) => s.checkConfig);
   const saveConfig = useZoteroStore((s) => s.saveConfig);
   const loadCollections = useZoteroStore((s) => s.loadCollections);
   const selectCollection = useZoteroStore((s) => s.selectCollection);
+  const loadLocalFulltext = useZoteroStore((s) => s.loadLocalFulltext);
 
   const [showConfig, setShowConfig] = useState(false);
   const [userIdInput, setUserIdInput] = useState('');
@@ -149,11 +152,23 @@ export default function ZoteroPanel() {
                 {papersLoading ? '...' : papers.length} 篇论文
               </span>
               {ragContext && (
-                <span className="text-emerald-600 font-mono font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">
-                  RAG ON
+                <span className={`font-mono font-semibold px-1.5 py-0.5 rounded ${localMode ? 'bg-amber-50 text-amber-700' : 'text-emerald-600 bg-emerald-50'}`}>
+                  {localMode ? '本地全文' : 'RAG ON'}
                 </span>
               )}
             </div>
+          )}
+
+          {/* 本地全文读取按钮 */}
+          {activeCollectionKey && (
+            <button
+              onClick={() => loadLocalFulltext(activeCollectionKey)}
+              disabled={localPapersLoading}
+              className="w-full mb-2 flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-amber-300/60 bg-amber-50/50 py-2 text-xs text-amber-700 hover:bg-amber-100/50 hover:border-amber-400/60 transition-all cursor-pointer disabled:opacity-50"
+            >
+              <HardDrive className="h-3.5 w-3.5" />
+              {localPapersLoading ? '正在读取 PDF 全文...' : localMode ? '重新读取本地全文' : '读取本地 Zotero 全文'}
+            </button>
           )}
 
           {/* 快速预览前3篇论文标题 */}
