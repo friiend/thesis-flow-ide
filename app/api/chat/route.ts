@@ -48,22 +48,29 @@ export async function POST(request: NextRequest) {
       modelPreference = DEFAULT_MODEL,
       ragContext = '',
       thesisContext = '',
+      apiKeys = {},
     } = body as {
       messages: Message[];
       variables: { key: string; value: string }[];
       modelPreference?: string;
       ragContext?: string;
       thesisContext?: string;
+      apiKeys?: { deepseek?: string; glm?: string };
     };
 
     // --- Resolve model config ---
     const mc = MODEL_CONFIG[modelPreference] ?? MODEL_CONFIG[DEFAULT_MODEL];
     const provider = PROVIDERS[mc.provider];
 
-    if (!provider || !provider.apiKey) {
+    // 优先使用观众在浏览器里填的 Key，服务器没有时才回退到环境变量
+    const clientKey = mc.provider === 'deepseek' ? apiKeys.deepseek : apiKeys.glm;
+    const resolvedKey = clientKey || provider?.apiKey;
+
+    if (!provider || !resolvedKey) {
       const envVar = mc.provider === 'deepseek' ? 'DEEPSEEK_API_KEY' : 'GLM_API_KEY';
+      const providerName = mc.provider === 'deepseek' ? 'DeepSeek' : 'GLM';
       return NextResponse.json(
-        { error: `${mc.provider} API Key 未配置。请在 .env.local 中添加:\n${envVar}=your-key` },
+        { error: `尚未配置 ${providerName} API Key。请点击右上角「密钥」填写自己的 Key（或在 .env.local 中设置 ${envVar}）。` },
         { status: 401 },
       );
     }
@@ -101,7 +108,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${provider.apiKey}`,
+        Authorization: `Bearer ${resolvedKey}`,
       },
       body: JSON.stringify({
         model: mc.model,

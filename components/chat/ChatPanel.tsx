@@ -8,6 +8,7 @@ import { useZoteroStore } from '../../store/useZoteroStore';
 import { useProjectStore } from '../../store/useProjectStore';
 import { db } from '../../lib/db';
 import { formatCitation } from '../../lib/zotero';
+import { loadApiKeys } from '../../lib/apiKeys';
 
 function loadVariables(): { key: string; value: string }[] {
   try {
@@ -94,6 +95,7 @@ export default function ChatPanel() {
             modelPreference: currentModel,
             ragContext: combinedRAG,
             thesisContext,
+            apiKeys: loadApiKeys(),
           }),
         });
 
@@ -122,7 +124,7 @@ export default function ChatPanel() {
         console.error('发送失败:', error);
         await addMessage(
           'assistant',
-          `[系统提示] 无法连接 DeepSeek API。请确保 .env.local 中的 DEEPSEEK_API_KEY 已正确填写。\n\n错误详情: ${error instanceof Error ? error.message : String(error)}`,
+          `[系统提示] ${error instanceof Error ? error.message : String(error)}`,
         );
       } finally {
         setIsLoading(false);

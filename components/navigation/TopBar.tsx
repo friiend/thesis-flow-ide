@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { GraduationCap, Building, AlertTriangle, Brain, Zap, ChevronDown, BookOpen, Sparkles, Flame, Coins } from 'lucide-react';
+import { GraduationCap, Building, AlertTriangle, Brain, Zap, ChevronDown, BookOpen, Sparkles, Flame, Coins, Key } from 'lucide-react';
 import { useProjectStore } from '@/store/useProjectStore';
 import { useChatStore, MODEL_OPTIONS } from '@/store/useChatStore';
+import ApiKeyModal from './ApiKeyModal';
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   brain: <Brain className="h-3.5 w-3.5" />,
@@ -23,6 +24,7 @@ export default function TopBar() {
   const setModel = useChatStore((s) => s.setModel);
 
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
+  const [apiKeyModalOpen, setApiKeyModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // 月度 token 统计
@@ -163,6 +165,15 @@ export default function TopBar() {
               </div>
             )}
           </div>
+
+          <button
+            onClick={() => setApiKeyModalOpen(true)}
+            className="flex items-center gap-1.5 bg-white/50 backdrop-blur-sm border border-white/60 rounded-xl px-3 py-1.5 text-xs text-stone-700 hover:bg-white/80 hover:border-amber-300/50 transition-all cursor-pointer shadow-sm"
+            title="配置自己的 API Key"
+          >
+            <Key className="h-3.5 w-3.5 text-stone-400" />
+            <span className="hidden sm:inline">密钥</span>
+          </button>
         </div>
       </header>
 
@@ -211,6 +222,8 @@ export default function TopBar() {
           </div>
         </div>
       )}
+
+      <ApiKeyModal open={apiKeyModalOpen} onClose={() => setApiKeyModalOpen(false)} />
     </>
   );
 }
