@@ -67,10 +67,9 @@ export async function POST(request: NextRequest) {
     const resolvedKey = clientKey || provider?.apiKey;
 
     if (!provider || !resolvedKey) {
-      const envVar = mc.provider === 'deepseek' ? 'DEEPSEEK_API_KEY' : 'GLM_API_KEY';
       const providerName = mc.provider === 'deepseek' ? 'DeepSeek' : 'GLM';
       return NextResponse.json(
-        { error: `尚未配置 ${providerName} API Key。请点击右上角「密钥」填写自己的 Key（或在 .env.local 中设置 ${envVar}）。` },
+        { error: `尚未配置 ${providerName} API Key。请点击聊天输入框旁的钥匙图标，填写自己的 Key。` },
         { status: 401 },
       );
     }
