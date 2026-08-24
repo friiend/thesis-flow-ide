@@ -101,8 +101,20 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  html,
   body {
-    @apply bg-background text-foreground;
+    min-height: 100%;
+  }
+
+  body {
+    @apply text-foreground;
+    background-color: #f5f5f4;
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(251, 191, 36, 0.28), transparent 32rem),
+      radial-gradient(circle at 88% 82%, rgba(249, 115, 22, 0.18), transparent 34rem),
+      linear-gradient(135deg, #e7e5e4 0%, #f5f5f4 52%, #fffbeb 100%);
+    background-attachment: fixed;
   }
 }
 
@@ -110,7 +122,16 @@
    Warm Cream Theme — Apple Liquid Glass Utilities
    ================================================================ */
 .warm-panel {
-  @apply bg-white/50 backdrop-blur-xl border border-white/60 shadow-lg shadow-stone-200/30 rounded-2xl;
+  background: rgba(255, 255, 255, 0.52);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
+  @apply border border-white/60 shadow-lg shadow-stone-200/30 rounded-2xl;
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .warm-panel {
+    background: rgba(255, 255, 255, 0.88);
+  }
 }
 
 .warm-panel-light {
