@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+// @ts-expect-error - @types/node@20 无 node:sqlite 类型声明（Node 22.5+ 内置模块），升级后删除本行
 import { DatabaseSync } from 'node:sqlite';
 import { existsSync, cpSync } from 'node:fs';
 import { join } from 'node:path';
@@ -32,8 +33,8 @@ interface ZoteroPaper {
 // ============================================================
 // Zotero DB path
 // ============================================================
-const ZOTERO_DB = join(process.env.HOME || '~', 'Zotero/zotero.sqlite');
-const ZOTERO_STORAGE = join(process.env.HOME || '~', 'Zotero/storage');
+const ZOTERO_DB = join(/* turbopackIgnore: true */ process.env.HOME || '~', 'Zotero/zotero.sqlite');
+const ZOTERO_STORAGE = join(/* turbopackIgnore: true */ process.env.HOME || '~', 'Zotero/storage');
 
 function openDb(): DatabaseSync {
   // Copy to temp to avoid lock issue with running Zotero
@@ -45,22 +46,12 @@ function openDb(): DatabaseSync {
 // ============================================================
 // Extract text from PDF
 // ============================================================
-import { execFileSync } from 'node:child_process';
-
-const PROJECT_ROOT = join(process.cwd());
-
-async function extractPdfText(pdfPath: string): Promise<string> {
-  try {
-    const result = execFileSync('node', [
-      join(PROJECT_ROOT, 'scripts/extract-pdf.cjs'),
-      pdfPath,
-    ], { timeout: 60000, encoding: 'utf-8' });
-    const parsed = JSON.parse(result.trim().split('\n').pop() || '{}');
-    return parsed.ok ? (parsed.text || '') : '';
-  } catch (err) {
-    console.warn('[ZoteroLocal] PDF extraction failed:', err instanceof Error ? err.message : err);
-    return '';
-  }
+// PDF 全文抽取原本通过 spawn 子进程运行 scripts/extract-pdf.cjs，但该动态
+// 脚本路径会让 Turbopack 生产构建失败（server relative imports），且依赖本地
+// ~/Zotero 在云端无法运行，故暂时停用。如需恢复，可改为在 route 内直接
+// import pdfjs-dist 实现进程内抽取。
+async function extractPdfText(_pdfPath: string): Promise<string> {
+  return '';
 }
 
 // ============================================================
