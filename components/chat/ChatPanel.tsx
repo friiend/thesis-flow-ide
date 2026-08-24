@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Bot, User, Send, Plus } from 'lucide-react';
+import { Bot, User, Send, Plus, Key } from 'lucide-react';
 import { useChatStore } from '../../store/useChatStore';
 import { useEditorStore } from '../../store/useEditorStore';
 import { useZoteroStore } from '../../store/useZoteroStore';
@@ -9,6 +9,7 @@ import { useProjectStore } from '../../store/useProjectStore';
 import { db } from '../../lib/db';
 import { formatCitation } from '../../lib/zotero';
 import { loadApiKeys } from '../../lib/apiKeys';
+import ApiKeyModal from '../navigation/ApiKeyModal';
 
 function loadVariables(): { key: string; value: string }[] {
   try {
@@ -39,6 +40,7 @@ export default function ChatPanel() {
 
   const [mentionActive, setMentionActive] = useState(false);
   const [mentionIndex, setMentionIndex] = useState(0);
+  const [apiKeyModalOpen, setApiKeyModalOpen] = useState(false);
 
   const messages = useChatStore((s) => s.messages);
   const addMessage = useChatStore((s) => s.addMessage);
@@ -326,6 +328,14 @@ export default function ChatPanel() {
           className="flex-1 resize-none rounded-xl border border-white/50 bg-white/60 backdrop-blur-sm px-4 py-2.5 text-sm text-stone-700 placeholder:text-stone-400 focus:border-amber-400/50 focus:outline-none focus:bg-white/80 focus:ring-2 focus:ring-amber-400/20 transition-all disabled:opacity-50"
         />
         <button
+          type="button"
+          onClick={() => setApiKeyModalOpen(true)}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/50 backdrop-blur-sm border border-white/60 text-stone-500 hover:bg-white/80 hover:border-amber-300/50 transition-all cursor-pointer"
+          title="配置 API Key"
+        >
+          <Key className="h-4 w-4" />
+        </button>
+        <button
           type="submit"
           disabled={isLoading || !input.trim()}
           className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-400 text-white hover:from-amber-300 hover:to-orange-300 transition-all shadow-md hover:shadow-lg hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
@@ -333,6 +343,8 @@ export default function ChatPanel() {
           <Send className="h-4 w-4" />
         </button>
       </form>
+
+      <ApiKeyModal open={apiKeyModalOpen} onClose={() => setApiKeyModalOpen(false)} />
     </div>
   );
 }
